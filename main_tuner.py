@@ -5,6 +5,7 @@ from sklearn import metrics
 from sklearn.model_selection import train_test_split
 import numpy as np
 from IPython import embed
+from mySampler import ROS, SMOTE
 
 if '__main__':
     raw = pd.read_csv(sys.argv[1])
