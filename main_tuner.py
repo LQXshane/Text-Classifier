@@ -4,6 +4,7 @@ import sys
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 import numpy as np
+from IPython import embed
 
 if '__main__':
     raw = pd.read_csv(sys.argv[1])
@@ -49,6 +50,6 @@ if '__main__':
     cmat = metrics.confusion_matrix(y_test, predicted)
     print(cmat)
 
-    print("CCR %0.2f"%((cmat[0][0]+cmat[1][1])* 100/sum(sum(cmat))))
-
+    print("CCR %0.2f"%((float(cmat[0][0]+cmat[1][1]))* 100/sum(sum(cmat))))
+    print("Percentage of predicted positives %0.2f" % (float((cmat[0][1] + cmat[1][1])) * 100 / sum(sum(cmat))))
     print(svm_models.best_params_)
