@@ -20,8 +20,8 @@ def tuner(X, y, NUM_TRIALS, param, K):
     '''
     piper = Pipeline([
         ('vect', CountVectorizer(min_df=0.005)),
-        ('tfidf', TfidfTransformer(use_idf=True)),
-        ('clf', svm.SVC()),
+        ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
+        ('clf', svm.SVC(kernel='linear', class_weight='balanced')),
     ])
     parameters = param
     scores = np.zeros(NUM_TRIALS)

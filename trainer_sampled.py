@@ -5,7 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.model_selection import KFold, GridSearchCV, train_test_split
 from time import time
 import numpy as np
-from IPython import embed
+# from IPython import embed
 from sklearn.feature_extraction.text import TfidfVectorizer
 from imblearn.over_sampling import RandomOverSampler, SMOTE
 
@@ -24,7 +24,7 @@ def tuner(X, y, NUM_TRIALS, param, K):
 
 
     piper = Pipeline([
-        ('clf', svm.SVC())
+        ('clf', svm.SVC(class_weight='balanced'))
     ])
     parameters = param
     scores = np.zeros(NUM_TRIALS)
@@ -36,7 +36,7 @@ def tuner(X, y, NUM_TRIALS, param, K):
 
         inner_cv = KFold(n_splits = K, shuffle=True, random_state=i)
 
-        model = GridSearchCV(piper, param_grid=parameters, cv=inner_cv, n_jobs=-1, scoring='f1') # accuracy no good, TPR/recall no good
+        model = GridSearchCV(piper, param_grid=parameters, cv=inner_cv, n_jobs=-1, scoring='precision') # accuracy no good, TPR/recall no good
         model.fit(X, y)
 
         scores[i] = model.best_score_
@@ -46,7 +46,7 @@ def tuner(X, y, NUM_TRIALS, param, K):
     return (model, scores)
 
 
-raw = pd.read_csv('../categories/GT/no_border/trump/trump_cleaned.csv')
+raw = pd.read_csv('../categories/no_GT/no_border/trump/trump_cleaned.csv')
 
 print(raw.head())
 
@@ -56,12 +56,14 @@ y_raw = np.array(raw['label'], dtype='int64')
 
 vect = TfidfVectorizer(min_df=0.005)
 # ros = RandomOverSampler()
-sm = SMOTE(kind='svm')
+sm = SMOTE(kind='svm', random_state = 2, ratio = 0.102)
 
 X = vect.fit_transform(X_raw).toarray()
 X, y = sm.fit_sample(X, y_raw)
 
-embed()
+print("Shape of data: ", sm.X_shape_)
+
+# embed()
 
 parameters = {
     # 'vect__min_df': (0.005) ,    #(0.003, 0.007, 0.005,0.001),
@@ -69,17 +71,17 @@ parameters = {
     # 'vect__ngram_range': ((1, 1), (1, 2)),  # unigrams or bigrams
     # 'tfidf__use_idf': (True, False),
     # 'vect__norm': ('l1', 'l2'),
-    'clf__C': (0.6, 0.55, 0.5, 0.4, 0.3),
-    'clf__kernel': ('linear', 'rbf', 'poly' ),#'sigmoid'),#, 'precomputed'),
-    'clf__class_weight': (None, 'balanced'),
-    'clf__tol': (1e-3, 1e-4, 1e-5)
+    'clf__C': (1, 0.9,0.8,0.7), #0.6, 0.55) ,#, 0.5, 0.4, 0.3),
+    'clf__kernel': ('linear', 'rbf'), #'poly' ),#'sigmoid'),#, 'precomputed'),
+    # 'clf__class_weight': (None, 'balanced'),
+    # 'clf__tol': (1e-3, 1e-4, 1e-5)
     # 'clf__probability':(False, True),
 }
 
 
-svm_models, eval_scores = tuner(X, y, 7, parameters, 5)
+svm_models, eval_scores = tuner(X, y, 7, parameters, 4)
 
-print ("Using F1 as CV evaluation: ", eval_scores)
+print ("Using precision as CV evaluation: ", eval_scores)
 
 # embed()
 
@@ -109,12 +111,17 @@ predicted = clf.predict(X_test)
 # embed()
 
 print(metrics.classification_report(y_test, predicted))
+print("Precision: %0.2f" % (metrics.precision_score(y_test, predicted)))
+print("TPR(recall): %0.2f" % (metrics.recall_score(y_test, predicted)))
+print("F1_score: %0.2f" % (metrics.f1_score(y_test, predicted)))
 
 cmat = metrics.confusion_matrix(y_test, predicted)
 print(cmat)
 
-print("CCR %0.2f"%((cmat[0][0]+cmat[1][1])* 100/sum(sum(cmat))))
+print("CCR %0.2f"%(float((cmat[0][0]+cmat[1][1]))* 100/sum(sum(cmat))))
+print("Percentage of predicted positives %0.2f" % (float((cmat[0][1] + cmat[1][1])) * 100 / sum(sum(cmat))))
+
 
 print(svm_models.best_params_)
 
-embed()
+# embed()
