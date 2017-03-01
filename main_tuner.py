@@ -19,44 +19,47 @@ if '__main__':
     #
     # raw = pd.concat([raw1, raw2, raw3, raw4])
 
-    file = "../categories/no_GT/no_border/trump/trump_cleaned.csv"
-    sar = "../../Sarcasm/sarcasm_cleaned.csv"
-    raw = pd.read_csv(file)
+    file = "../categories/no_GT/border/trump/trump_cleaned.csv"
+    # sar = "../../Sarcasm/sarcasm_cleaned.csv"
+    raw = pd.read_csv(file).drop_duplicates()
 
-    sarcasm = pd.read_csv(sar)
-    sarcasm.columns = ['contents',
-                     'Bernie',
-                     'Trump',
-                     'Clinton',
-                     'Cruz',
-                     'Num of Candidate',
-                     'Sarcasm_s1',
-                     'Sarcasm_s2',
-                     'Sarcasm_s3',
-                     'Sarcasm_s4',
-                     'Sarcasm_s5',
-                     'Sarcasm_s6',
-                     'Sarcasm_s7',
-                     'Number of Sarc',
-                     'Short and link']
+    # sarcasm = pd.read_csv(sar)
+    # sarcasm = sarcasm.drop_duplicates()
+    # sarcasm.columns = ['contents',
+    #                  'Bernie',
+    #                  'Trump',
+    #                  'Clinton',
+    #                  'Cruz',
+    #                  'Num of Candidate',
+    #                  'Sarcasm_s1',
+    #                  'Sarcasm_s2',
+    #                  'Sarcasm_s3',
+    #                  'Sarcasm_s4',
+    #                  'Sarcasm_s5',
+    #                  'Sarcasm_s6',
+    #                  'Sarcasm_s7',
+    #                  'Number of Sarc',
+    #                  'Short and link']
+    #
+    # res = pd.merge(raw, sarcasm, how='left', on=['contents']).dropna()
+    # res = res.drop_duplicates()
+    # # embed()
+    # del res['Bernie'], res['Trump'], res['Clinton'], res['Cruz']
+    #
+    # del raw, sarcasm
+    #
+    # raw = res
+    # # embed()
+    # print(raw.head())
+    #
+    # # del raw1, raw2, raw3, raw4
 
-    res = pd.merge(raw, sarcasm, how='left', on=['contents']).dropna()
-    del res['Bernie'], res['Trump'], res['Clinton'], res['Cruz']
 
-    del raw, sarcasm
-
-    raw = res
-    embed()
-    print(raw.head())
-
-    # del raw1, raw2, raw3, raw4
-
-
-    # X = raw['contents']
+    X = raw['contents']
     y = np.array(raw['label'], dtype='int64')
-    del raw['label']
+    # del raw['label']
 
-    X = raw
+    # X = raw
 
     parameters = {
         # 'vect__min_df': (0.005) ,    #(0.003, 0.007, 0.005,0.001),
@@ -65,13 +68,13 @@ if '__main__':
         # 'tfidf__use_idf': (True, False),
         # 'tfidf__norm': ('l1', 'l2'),
         'clf__C': (0.9, 0.8, 0.7, 0.6, 0.5, 0.4), # 0.3, 0.2),
-        'clf__kernel': ('linear', 'rbf'),#, 'precomputed'),, 'poly', 'sigmoid'
+        # 'clf__kernel': ('linear', 'rbf'),#, 'precomputed'),, 'poly', 'sigmoid'
         # 'clf__class_weight': (None, 'balanced'),
         # 'clf__tol': (1e-3, 1e-4, 1e-5)
         # 'clf__probability':(False, True),
     }
 
-    svm_models, eval_scores = tuner(X, y, 1, parameters, 5)
+    svm_models, eval_scores = tuner(X, y, 7, parameters, 5)
 
     print ("Using precision as CV evaluation: ", eval_scores)
 
